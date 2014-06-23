@@ -17,7 +17,7 @@ var constants = {
 Node = (function() {
     function Node(label) {
         this.label = label;
-        this.edges_in = [];
+        this.edges_in = [];math.range(0, this.P.length);
         this.edges_out = [];
         this.is_source = false;
         this.is_destination = false;
@@ -127,8 +127,12 @@ MyGraph = (function() {
         this.teta = this.getTeta();
         this.initEdgeVectors();
 
-        var x = math.range(0, this.P.length);
-        console.log(this.proectionOnX(x));
+        var x = [];
+        for (var i = 0; i< this.P.length; ++i) {
+            x.push(random(20));
+        }
+        x = math.matrix(x);
+        console.log(x, this.proectionOnX(x));
     }
 
     Graph.prototype.paths = function(a, b, excludes) {
@@ -194,10 +198,34 @@ MyGraph = (function() {
     };
 
     Graph.prototype.proectionOnX = function(x) {
-        console.log(math.format(x));
+        var offset = 0;
+        var result = math.matrix();
         for (var i = 0; i < this.W.length; ++i) {
             var w = this.W[i];
+            if (w.paths.length == 1) {
+                result.subset(math.index([offset, offset + w.paths.length]), w.demand);
+                offset += w.paths.length;
+            } else if (w.paths.length > 0) {
+                var c = math.ones(w.paths.length);
+                var cur_x = x.subset(math.index([offset, offset + w.paths.length]));
+                var wasNegative = true;
+                while (wasNegative) {
+                    var p = math.select(w.demand).subtract(math.multiply(c, cur_x))
+                        .divide(Math.pow(math.norm(c), 2)).multiply(c).add(cur_x)
+                        .dotMultiply(c).done();
+                    wasNegative = false;
+                    p.forEach(function (value, index) {
+                        if (value < 0) {
+                            c.set(index, 0);
+                            wasNegative = true;
+                        }
+                    });
+                }
+                result.subset(math.index([offset, offset + w.paths.length]), p);
+                offset += w.paths.length;
+            }
         }
+        return result;
     };
 
 
