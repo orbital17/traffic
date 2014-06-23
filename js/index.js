@@ -17,7 +17,7 @@ var constants = {
 Node = (function() {
     function Node(label) {
         this.label = label;
-        this.edges_in = [];math.range(0, this.P.length);
+        this.edges_in = [];
         this.edges_out = [];
         this.is_source = false;
         this.is_destination = false;
