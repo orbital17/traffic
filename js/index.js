@@ -6,7 +6,7 @@ var random = function(n) {
 
 var log = function(object) {
     console.log(object.toString());
-}
+};
 
 var constants = {
     source_probability: 0.2,
@@ -132,7 +132,9 @@ MyGraph = (function() {
             x.push(random(20));
         }
         x = math.matrix(x);
-        console.log(x, this.proectionOnX(x));
+        this.Korpolevich(x, 0.1);
+        this.Popov(x, 0.1);
+        this.modified(x, 0.1);
     }
 
     Graph.prototype.paths = function(a, b, excludes) {
@@ -211,7 +213,7 @@ MyGraph = (function() {
                 var wasNegative = true;
                 while (wasNegative) {
                     var p = math.select(w.demand).subtract(math.multiply(c, cur_x))
-                        .divide(Math.pow(math.norm(c), 2)).multiply(c).add(cur_x)
+                        .divide(math.square(math.norm(c))).multiply(c).add(cur_x)
                         .dotMultiply(c).done();
                     wasNegative = false;
                     p.forEach(function (value, index) {
@@ -228,6 +230,52 @@ MyGraph = (function() {
         return result;
     };
 
+    Graph.prototype.Korpolevich = function(x0, eps) {
+        var lambda = 0.1;
+        var x = x0.clone();
+        var i = 0;
+        do {
+            x0 = x;
+            y = this.proectionOnX(math.subtract(x0, math.multiply(lambda, this.G(x0))));
+            x = this.proectionOnX(math.subtract(x0, math.multiply(lambda, this.G(y))));
+            ++i;
+        } while (math.select(x).subtract(x0).norm().done() > eps);
+        console.log(i);
+        console.log(x);
+    };
+
+    Graph.prototype.Popov = function(x0, eps) {
+        var lambda = 0.1;
+        var x = x0.clone(), y = x0.clone();
+        var i = 0;
+        do {
+            x0 = x;
+            y = this.proectionOnX(math.subtract(y, math.multiply(lambda, this.G(x0))));
+            x = this.proectionOnX(math.subtract(y, math.multiply(lambda, this.G(x0))));
+            ++i;
+        } while (math.select(x).subtract(x0).norm().done() > eps);
+        console.log(i);
+        console.log(x);
+    };
+
+    Graph.prototype.modified = function(x0, eps) {
+        var lambda = 0.1;
+        var x = x0.clone(), y = x0.clone();
+        var i = 0;
+        var alpha = 0;
+        do {
+            x0 = x;
+            y = this.proectionOnX(math.subtract(x0, math.multiply(lambda, this.G(x0))));
+            x = this.proectionOnX(math.subtract(x0, math.multiply(lambda, this.G(y))));
+            alpha = 0.8 / 0.9 * math.norm(math.subtract(x, y)) /
+                math.norm(math.subtract(this.G(x), this.G(y)));
+            if (alpha)
+                lambda = Math.min(lambda, alpha);
+            ++i;
+        } while (math.select(x).subtract(x0).norm().done() > eps);
+        console.log(i);
+        console.log(x);
+    }
 
     return Graph;
 })();
