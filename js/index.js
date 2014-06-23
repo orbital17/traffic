@@ -11,7 +11,8 @@ var log = function(object) {
 var constants = {
     source_probability: 0.2,
     destination_probability: 0.2,
-    edge_probability: 0.2
+    edge_probability: 0.2,
+    source_destination_max_flow: 50
 };
 
 Node = (function() {
@@ -113,7 +114,8 @@ MyGraph = (function() {
         this.P = [];
         for(i = 0; i < this.sources.length; ++i) {
             for (j = 0; j < this.destinations.length; ++j) {
-                var sdp = new SourceDestinationPair(this.sources[i], this.destinations[j], random(20));
+                var sdp = new SourceDestinationPair(this.sources[i], this.destinations[j],
+                    random(constants.source_destination_max_flow));
                 sdp.paths = this.paths(this.sources[i], this.destinations[j], []);
                 this.P = this.P.concat(sdp.paths);
                 this.W.push(sdp);
@@ -308,7 +310,7 @@ GraphRenderer = function(graph) {
 
 $(function() {
     do {
-        window.graph = new MyGraph(10);
+        window.graph = new MyGraph(15);
     } while (window.graph.P.length == 0);
     var renderer = new GraphRenderer(window.graph);
 
