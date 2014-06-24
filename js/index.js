@@ -310,7 +310,7 @@ GraphRenderer = function(graph) {
 
 $(function() {
     do {
-        window.graph = new MyGraph(15);
+        window.graph = new MyGraph(10);
     } while (window.graph.P.length == 0);
     var renderer = new GraphRenderer(window.graph);
 
